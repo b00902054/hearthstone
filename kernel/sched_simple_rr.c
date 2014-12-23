@@ -33,6 +33,8 @@ static void enqueue_task_simple_rr(struct rq *rq, struct task_struct *p, int wak
 {
 	// not yet implemented
 	// ...
+	list_add_tail(&p->simple_rr_list_item, &rq->simple_rr.queue);	
+	rq->simple_rr.nr_running++;
 }
 
 static void dequeue_task_simple_rr(struct rq *rq, struct task_struct *p, int sleep)
@@ -42,6 +44,8 @@ static void dequeue_task_simple_rr(struct rq *rq, struct task_struct *p, int sle
 
 	// not yet implemented
 	// ...
+	list_del(&p->simple_rr_list_item);
+	rq->simple_rr.nr_running--;
 }
 
 /*
@@ -61,6 +65,7 @@ yield_task_simple_rr(struct rq *rq)
 {
 	// not yet implemented
 	// ...
+	list_move_tail(&rq->curr->simple_rr_list_item, &rq->simple_rr.queue);
 }
 
 /*
@@ -82,7 +87,11 @@ static struct task_struct *pick_next_task_simple_rr(struct rq *rq)
 
 	// not yet implemented
 	// ...
-	
+	if(rq->simple_rr.nr_running == 0)	return NULL;
+	else
+	{
+		return list_first_entry( &rq->simple_rr.queue, struct task_struct, simple_rr_list_item);
+	}	
 	/* you need to return the selected task here */
 	return NULL;
 }
@@ -183,6 +192,13 @@ static void task_tick_simple_rr(struct rq *rq, struct task_struct *p,int queued)
 	// not yet implemented
 	//...
 	
+	p->task_time_slice--;
+	if(p->task_time_slice <= 0)
+	{
+		p->task_time_slice = simple_rr_time_slice;
+		set_tsk_need_resched(p);
+		yield_task_simple_rr(rq);		
+	}	
 	return NULL;	
 }
 

@@ -90,7 +90,9 @@ static struct task_struct *pick_next_task_simple_rr(struct rq *rq)
 	if(rq->simple_rr.nr_running == 0)	return NULL;
 	else
 	{
-		return list_first_entry( &rq->simple_rr.queue, struct task_struct, simple_rr_list_item);
+		next = list_first_entry( &rq->simple_rr.queue, struct task_struct, simple_rr_list_item);
+		next->se.exec_start = rq->clock;
+		return next;
 	}	
 	/* you need to return the selected task here */
 	return NULL;

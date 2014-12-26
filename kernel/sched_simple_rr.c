@@ -35,6 +35,7 @@ static void enqueue_task_simple_rr(struct rq *rq, struct task_struct *p, int wak
 	// ...
 	list_add_tail(&p->simple_rr_list_item, &rq->simple_rr.queue);	
 	rq->simple_rr.nr_running++;
+	p->rt_priority = rq->simple_rr.nr_running;	
 }
 
 static void dequeue_task_simple_rr(struct rq *rq, struct task_struct *p, int sleep)
@@ -197,7 +198,8 @@ static void task_tick_simple_rr(struct rq *rq, struct task_struct *p,int queued)
 	p->task_time_slice--;
 	if(p->task_time_slice <= 0)
 	{
-		p->task_time_slice = simple_rr_time_slice;
+		//p->task_time_slice = simple_rr_time_slice;
+		p->task_time_slice = (simple_rr_time_slice * (p->rt_priority));
 		set_tsk_need_resched(p);
 		yield_task_simple_rr(rq);		
 	}	
